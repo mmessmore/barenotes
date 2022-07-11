@@ -30,7 +30,8 @@ import (
 
 // editCmd represents the edit command
 var editCmd = &cobra.Command{
-	Use:   "edit",
+	Args:  cobra.MinimumNArgs(1),
+	Use:   "edit [TITLE]",
 	Short: "Edit an existing note",
 	Long: `Run editor on existing note by title.
 

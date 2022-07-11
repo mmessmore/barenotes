@@ -31,7 +31,7 @@ import (
 // newCmd represents the new command
 var newCmd = &cobra.Command{
 	Args:    cobra.MinimumNArgs(1),
-	Use:     "new [TITLE OF NOTE]",
+	Use:     "new [TITLE]",
 	Aliases: []string{"create"},
 	Short:   "Create a new note",
 	Long: `Create a new note.

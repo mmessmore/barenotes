@@ -21,6 +21,7 @@ THE SOFTWARE.
 package internal
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -80,18 +81,27 @@ func GetTitles(toComplete string) []string {
 func Create(title string) {
 	filename := fmt.Sprintf("notes/%s.md",
 		strings.ReplaceAll(strings.ToLower(title), " ", "-"))
+	fullFilename := "content/" + filename
 
-	hugo, err := GetHugo()
+	if _, err := os.Stat(fullFilename); err == nil {
+		fmt.Printf("File already exists, editing:\n\t%s\n", fullFilename)
+		Edit(fullFilename)
+	} else if errors.Is(err, os.ErrNotExist) {
+		hugo, err := GetHugo()
 
-	run_err := Run(hugo, "new", filename)
-	if err != nil {
-		fmt.Println("ERROR: Failed to run hugo")
-		fmt.Println(run_err.Output)
-		os.Exit(run_err.ExitCode)
+		run_err := Run(hugo, "new", filename)
+		if err != nil {
+			fmt.Println("ERROR: Failed to run hugo")
+			fmt.Println(run_err.Output)
+			os.Exit(run_err.ExitCode)
+		}
+
+		Edit(fullFilename)
+	} else {
+		fmt.Println(err)
+		os.Exit(1)
 	}
-	filename = fmt.Sprintf("content/%s", filename)
 
-	Edit(filename)
 }
 
 func Todo() {
