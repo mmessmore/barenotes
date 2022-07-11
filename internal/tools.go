@@ -21,10 +21,13 @@ THE SOFTWARE.
 package internal
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/spf13/viper"
@@ -169,6 +172,35 @@ func YamlConfig(path string) {
 	y, _ := yaml.Marshal(&rc)
 
 	fmt.Fprint(output, string(y))
+}
+
+func PromptToSaveConfig(root string, configPath string) {
+	realRoot, _ := filepath.Abs(root)
+	viper.Set("root", realRoot)
+	DisplayHumanConfig()
+	if !Prompt(
+		fmt.Sprintf(
+			"Save this config to %s?",
+			configPath,
+		)) {
+		fmt.Println("Configuration not saved")
+		os.Exit(0)
+	}
+	YamlConfig(configPath)
+	fmt.Printf("Configuration saved to %s\n", configPath)
+}
+
+func Prompt(prompt string) bool {
+	buf := bufio.NewReader(os.Stdin)
+
+	fmt.Printf("%s [y/n]? ", prompt)
+	resp, err := buf.ReadString('\n')
+	if err != nil {
+		fmt.Printf("Error reading from prompt: %v\n", err)
+		os.Exit(1)
+	}
+
+	return strings.ToLower(strings.TrimSpace(resp))[0] == 'y'
 }
 
 type RunError struct {

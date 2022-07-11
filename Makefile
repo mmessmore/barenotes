@@ -15,6 +15,9 @@ install: messynotes
 	install -v -m 755 messynotes $(BINDIR)/
 	messynotes completion zsh > $(SHELLCOMPDIR)/_messynotes
 
+.PHONY: test
+test:
+	make -C test
 
 .PHONY: clean
 clean:

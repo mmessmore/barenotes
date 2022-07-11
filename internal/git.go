@@ -23,72 +23,35 @@ package internal
 import (
 	"fmt"
 	"os"
-	"strings"
 )
 
-func InitRepo(path string, url string) {
-
-	// this changes the CWD as a side-effect
-	err := createBaseRepo(path)
+func addSubmodule(url string, path string, theme_path string) *RunError {
+	// set up the submodule
+	err := RunGit("submodule", "add", url, theme_path)
 	if err != nil {
-		fmt.Printf("Could not create or use directory:\n%s\n", path)
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	// make themes directory
-	err = os.Mkdir("./themes", 0750)
-	if err != nil && !os.IsExist(err) {
-		fmt.Printf("Could not create or use directory:\n%s/themes\n", path)
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	// derive the theme name and path from the URL
-	pieces := strings.Split(url, "/")
-	theme_name := pieces[len(pieces)-1]
-	theme_name = strings.TrimSuffix(theme_name, ".git")
-	theme_name = strings.TrimPrefix(theme_name, "hugo-")
-	theme_path := fmt.Sprintf("./themes/%s", theme_name)
-
-	err = addSubmodule(url, path, theme_path)
-	if err != nil {
-		fmt.Printf("Adding theme git submodule failed in %s\n", path)
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	// just be save that we got the bits
-	run_err := Run("git", "submodule", "update", "--init")
-	if run_err != nil {
-		fmt.Printf("Adding theme git submodule failed in %s\n", path)
-		fmt.Println(run_err.Output)
-		os.Exit(run_err.ExitCode)
-	}
-}
-
-func createBaseRepo(path string) error {
-	// create directory or just use it if it exists
-	err := os.Mkdir(path, 0750)
-	if err != nil && !os.IsExist(err) {
 		return err
 	}
-	// cd to directory
-	os.Chdir(path)
-
-	// init git repo
-	run_err := Run("git", "init")
-	if run_err != nil {
-		fmt.Printf("'git init' failed in %s\n", path)
-		fmt.Println(run_err.Output)
-		os.Exit(run_err.ExitCode)
+	err = RunGit("submodule", "update", "--init")
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
-func addSubmodule(url string, path string, theme_path string) *RunError {
-	// set up the submodule
-	err := Run("git", "submodule", "add", url, theme_path)
+func initialCommit() *RunError {
+	err := RunGit("add", ".")
+	if err != nil {
+		return err
+	}
+	err = RunGit("commit", "-am", "init new notes repo")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func initGitRepo() *RunError {
+	err := RunGit("init")
 	if err != nil {
 		return err
 	}
@@ -96,21 +59,36 @@ func addSubmodule(url string, path string, theme_path string) *RunError {
 }
 
 func UpdateSubmodule() {
-	CD()
-	Git("submodule", "update", "--remote", "--merge")
+	ExecGit("submodule", "update", "--remote", "--merge")
 }
 
-func Git(args ...string) {
-	CD()
+func ExecGit(args ...string) {
 	git, err := GetGit()
 	if err != nil {
 		fmt.Println("Failed find git")
 		fmt.Println(err)
+		os.Exit(1)
 	}
 	realCommand := append([]string{git}, args...)
 	err = Exec(realCommand...)
 	if err != nil {
 		fmt.Println("Failed to run git")
 		fmt.Println(err)
+		os.Exit(1)
 	}
+}
+
+func RunGit(args ...string) *RunError {
+	git, err := GetGit()
+	if err != nil {
+		fmt.Println("Failed find git")
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	realCommand := append([]string{git}, args...)
+	runErr := Run(realCommand...)
+	if runErr != nil {
+		return runErr
+	}
+	return nil
 }

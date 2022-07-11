@@ -24,30 +24,30 @@ package cmd
 import (
 	"github.com/mmessmore/messynotes/internal"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-// updateCmd represents the update command
-var updateCmd = &cobra.Command{
-	Use:   "update",
-	Short: "Update theme",
-	Long: `This command will update the theme submodule to the current upstream
-version.`,
+// editConfigCmd represents the editConfig command
+var editConfigCmd = &cobra.Command{
+	Use:   "editConfig",
+	Short: "Edit configuration file",
+	Long:  `Open the config file in your default editor`,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.CD()
-		internal.UpdateSubmodule()
+		path := viper.ConfigFileUsed()
+		internal.Edit(path)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(updateCmd)
+	rootCmd.AddCommand(editConfigCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// updateCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// editConfigCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// updateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// editConfigCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

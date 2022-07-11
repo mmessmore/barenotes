@@ -42,7 +42,8 @@ Examples:
  messynotes git push
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.Git(args...)
+		internal.CD()
+		internal.ExecGit(args...)
 	},
 }
 
