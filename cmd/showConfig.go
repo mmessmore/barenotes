@@ -21,7 +21,7 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"github.com/mmessmore/barenotes/internal"
+	"github.com/mmessmore/messynotes/internal"
 	"github.com/spf13/cobra"
 )
 

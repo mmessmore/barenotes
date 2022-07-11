@@ -22,7 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"github.com/mmessmore/barenotes/internal"
+	"github.com/mmessmore/messynotes/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -37,9 +37,9 @@ not interpreted as options to this command.  Arguments (eg "push", "commit",
 and paths) do not require this.
 
 Examples:
- barenotes git add .
- barenotes git commit -- -am "todo update"
- barenotes git push
+ messynotes git add .
+ messynotes git commit -- -am "todo update"
+ messynotes git push
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		internal.Git(args...)

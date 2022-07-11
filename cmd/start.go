@@ -24,7 +24,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mmessmore/barenotes/internal"
+	"github.com/mmessmore/messynotes/internal"
 	"github.com/spf13/cobra"
 )
 

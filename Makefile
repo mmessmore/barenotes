@@ -2,7 +2,7 @@ GO_FILES=$(shell find . -name '*.go' | tr '\n' ' ')
 BINDIR:=$(HOME)/bin
 SHELLCOMPDIR:=$(HOME)/.zsh_functions
 
-barenotes: $(GO_FILES) .pretty
+messynotes: $(GO_FILES) .pretty
 	go build -o $@
 
 .pretty: $(GO_FILES)
@@ -11,11 +11,11 @@ barenotes: $(GO_FILES) .pretty
 	touch .pretty
 
 .PHONY: install
-install: barenotes
-	install -v -m 755 barenotes $(BINDIR)/
-	barenotes completion zsh > $(SHELLCOMPDIR)/_barenotes
+install: messynotes
+	install -v -m 755 messynotes $(BINDIR)/
+	messynotes completion zsh > $(SHELLCOMPDIR)/_messynotes
 
 
 .PHONY: clean
 clean:
-	rm -f barenotes .pretty
+	rm -f messynotes .pretty

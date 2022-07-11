@@ -25,6 +25,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 // Linux has up to 32768
@@ -106,8 +107,10 @@ func GetPid() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	pidString := string(pidBytes)
+	pidString = strings.TrimSuffix(pidString, "\n")
 
-	pid, err = strconv.Atoi(string(pidBytes))
+	pid, err = strconv.Atoi(pidString)
 	if err != nil {
 		return 0, err
 	}

@@ -24,7 +24,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mmessmore/barenotes/internal"
+	"github.com/mmessmore/messynotes/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +51,7 @@ func init() {
 
 	initCmd.Flags().StringP("themeUrl",
 		"T",
-		"https://github.com/mmessmore/hugo-barenotes.git",
+		"https://github.com/mmessmore/hugo-messynotes.git",
 		"theme repository git URL")
 	initCmd.Flags().StringP("directory", "d", "./notes",
 		"directory to create repository in")

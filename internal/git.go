@@ -97,7 +97,7 @@ func addSubmodule(url string, path string, theme_path string) *RunError {
 
 func UpdateSubmodule() {
 	CD()
-	Git("git", "submodule", "update", "--remote", "--merge")
+	Git("submodule", "update", "--remote", "--merge")
 }
 
 func Git(args ...string) {

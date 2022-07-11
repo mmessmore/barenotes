@@ -1,4 +1,4 @@
-module github.com/mmessmore/barenotes
+module github.com/mmessmore/messynotes
 
 go 1.18
 
