@@ -10,6 +10,7 @@ export VERBOSE=0
 CSV_FILE=""
 JUNIT_FILE=""
 TESTSUITE="messynotes"
+export UNCLEAN=false
 
 # Vars for tests
 MESSY_CONFIG="./messynotes.yaml"
@@ -19,6 +20,7 @@ REPO_DIR="./notes"
 #   - You can set them to just "return 0" if you want them to be noops.
 #   - Fill them in if you want to do things within them for hooks
 #
+# cleanup   place to cleanup temp files etc.
 # pre_run   executed before testing starts
 # post_run  executed after testing end
 # pre_test  executed before every individual test
@@ -26,6 +28,21 @@ REPO_DIR="./notes"
 # post_test executed after every individual test
 #           always passed the test function name as the first argument
 ################################################################################
+
+if ! [ -x cleanup ]; then
+	cleanup() {
+		if ! "$UNCLEAN"; then
+			echo "skipping cleaning temp data"
+			echo "Temp directory: ${TDIR}"
+			return 0
+		fi
+			echo "cleaning temp files"
+			rm -fr "$TDIR" >/dev/null 2>&1
+
+			[ -d "$TDIR" ] && sleep 5
+			rm -fr "$TDIR"
+	}
+fi
 
 
 if ! [ -x pre_run ]; then
@@ -41,10 +58,9 @@ if ! [ -x pre_run ]; then
 			make clean
 			make
 		)
-		tdir=$(mktemp -d /tmp/messynotes_test.XXXXXX)
-		#trap 'rm -fr "$tdir"' EXIT
-		cp ../messynotes ./shuccess "$tdir"/
-		if ! cd "$tdir"; then
+		export TDIR=$(mktemp -d /tmp/messynotes_test.XXXXXX)
+		cp ../messynotes ./shuccess "$TDIR"/
+		if ! cd "$TDIR"; then
 			echo Temp directory failed tragically
 			exit 1
 		fi
@@ -109,9 +125,11 @@ test_config() {
 		return 1
 	fi
 	rdir="$(realpath "$REPO_DIR")"
-	if ! grep "^root: ${rdir}" "$MESSY_CONFIG"; then
-		echo "root ($rdir) missing from $MESSY_CONFIG"
-		cat "$MESSY_CONFIG"
+	# We have to handle macos where /tmp isn't /tmp but it is
+	if ! grep -q "^root: ${rdir#/private}" "$MESSY_CONFIG"; then
+		echo "'root: ${rdir}' missing from $MESSY_CONFIG"
+		echo "real line:"
+		grep ^root "$MESSY_CONFIG"
 		return 1
 	fi
 }
@@ -139,7 +157,7 @@ ${prog}
   formatting requirements.
 
 USAGE
-  ${prog} [-v] [-t NAME] [-r PATH] [-x PATH] [TEST_NUM]
+  ${prog} [-u] [-v] [-t NAME] [-r PATH] [-x PATH] [TEST_NUM]
   ${prog} -P
   ${prog} -h
 
@@ -152,6 +170,7 @@ OPTIONS
   -j PATH      Output JUnit formatted output to PATH
   -P           Print all tests
   -t NAME      Testsuite (and "class") name for reporting (Default: ${TESTSUITE})
+  -u           Unclean! Do not remove temp files/directories
   -v           Verbose, set more than once to be more verbose
 
 EXAMPLES
@@ -442,7 +461,7 @@ get_desc() {
 	fi
 }
 
-while getopts hc:j:Pt:v OPT; do
+while getopts hc:j:Pt:uv OPT; do
 	case "$OPT" in
 		h)
 			usage
@@ -463,6 +482,9 @@ while getopts hc:j:Pt:v OPT; do
 			;;
 		t)
 			TESTSUITE="$OPTARG"
+			;;
+		u)
+			export UNCLEAN=true
 			;;
 		v)
 			export VERBOSE=$((VERBOSE + 1))

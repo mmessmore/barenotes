@@ -108,7 +108,8 @@ func GetPid() (int, error) {
 		return 0, err
 	}
 	pidString := string(pidBytes)
-	pidString = strings.TrimSuffix(pidString, "\n")
+	// Just everything before the newline
+	pidString, _, _ = strings.Cut(pidString, "\n")
 
 	pid, err = strconv.Atoi(pidString)
 	if err != nil {
