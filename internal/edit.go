@@ -23,8 +23,9 @@ package internal
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 func Edit(path string) {
@@ -42,15 +43,45 @@ func Edit(path string) {
 	}
 }
 
+func EditByTitle(title string) {
+	filename := fmt.Sprintf("%s/content/notes/%s.md",
+		viper.GetString("root"),
+		strings.ReplaceAll(strings.ToLower(title), " ", "-"))
+	Edit(filename)
+}
+
+func GetTitles(toComplete string) []string {
+	var titles []string
+	f, err := os.Open(viper.GetString("root") + "/content/notes")
+	if err != nil {
+		return nil
+	}
+	files, err := f.Readdir(0)
+	if err != nil {
+		return nil
+	}
+
+	for _, file := range files {
+		if strings.Contains(
+			strings.ToLower(file.Name()),
+			strings.ToLower(toComplete),
+		) {
+			titles = append(
+				titles,
+				strings.ToLower(
+					strings.TrimSuffix(file.Name(), ".md"),
+				),
+			)
+		}
+	}
+	return titles
+}
+
 func Create(title string) {
 	filename := fmt.Sprintf("notes/%s.md",
 		strings.ReplaceAll(strings.ToLower(title), " ", "-"))
 
-	hugo, err := exec.LookPath("hugo")
-	if err != nil {
-		fmt.Println("ERROR: Could not find hugo executable")
-		os.Exit(1)
-	}
+	hugo, err := GetHugo()
 
 	run_err := Run(hugo, "new", filename)
 	if err != nil {
