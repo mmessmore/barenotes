@@ -32,7 +32,7 @@ var showConfigCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		doYaml, _ := cmd.Flags().GetBool("yaml")
 		if doYaml {
-			internal.DisplayYamlConfig()
+			internal.YamlConfig("")
 		} else {
 			internal.DisplayHumanConfig()
 		}

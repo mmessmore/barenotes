@@ -125,12 +125,24 @@ func DisplayHumanConfig() {
 	}
 }
 
-func DisplayYamlConfig() {
+func YamlConfig(path string) {
+	var err error
+	var output *os.File
 	type RunningConfig struct {
 		Root    string `yaml:"root"`
 		Hugo    string `yaml:"hugo"`
 		Editor  string `yaml:"editor"`
 		Browser string `yaml:"browser"`
+	}
+
+	if path == "" {
+		output = os.Stdout
+	} else {
+		output, err = os.Create(path)
+		if err != nil {
+			fmt.Printf("Error creating %s\n", path)
+			fmt.Println(err)
+		}
 	}
 
 	root := viper.GetString("root")
@@ -156,7 +168,7 @@ func DisplayYamlConfig() {
 
 	y, _ := yaml.Marshal(&rc)
 
-	fmt.Print(string(y))
+	fmt.Fprint(output, string(y))
 }
 
 type RunError struct {

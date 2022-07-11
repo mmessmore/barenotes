@@ -96,18 +96,21 @@ func addSubmodule(url string, path string, theme_path string) *RunError {
 }
 
 func UpdateSubmodule() {
+	CD()
 	Git("git", "submodule", "update", "--remote", "--merge")
 }
 
 func Git(args ...string) {
 	CD()
-	realArgs := []string{"git"}
-	realArgs = append(realArgs, args...)
-
-	err := Run(realArgs...)
+	git, err := GetGit()
 	if err != nil {
-		fmt.Printf("Git command failed")
-		fmt.Println(err.Output)
-		os.Exit(err.ExitCode)
+		fmt.Println("Failed find git")
+		fmt.Println(err)
+	}
+	realCommand := append([]string{git}, args...)
+	err = Exec(realCommand...)
+	if err != nil {
+		fmt.Println("Failed to run git")
+		fmt.Println(err)
 	}
 }
