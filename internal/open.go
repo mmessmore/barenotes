@@ -29,7 +29,6 @@ import (
 var URL = "http://localhost:1313"
 
 func Open() {
-
 	path, err := GetBrowser()
 	if err != nil {
 		fmt.Println("ERROR: could not find command to open browser")
@@ -38,11 +37,10 @@ func Open() {
 
 	args := []string{path, URL}
 
-	proc, err := os.StartProcess(path, args, &os.ProcAttr{})
+	_, err = Background(args...)
 	if err != nil {
 		fmt.Println("ERROR: could not open browser")
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	proc.Release()
 }

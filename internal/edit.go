@@ -25,7 +25,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"syscall"
 )
 
 func Edit(path string) {
@@ -35,9 +34,7 @@ func Edit(path string) {
 		os.Exit(1)
 	}
 
-	env := os.Environ()
-
-	err = syscall.Exec(editor, []string{editor, path}, env)
+	err = Exec(editor, path)
 	if err != nil {
 		fmt.Printf("ERROR: failed to open editor on %s\n", path)
 		fmt.Println(err)
@@ -55,11 +52,11 @@ func Create(title string) {
 		os.Exit(1)
 	}
 
-	cmd := exec.Command(hugo, "new", filename)
-	out, err := cmd.Output()
+	run_err := Run(hugo, "new", filename)
 	if err != nil {
 		fmt.Println("ERROR: Failed to run hugo")
-		fmt.Println(out)
+		fmt.Println(run_err.Output)
+		os.Exit(run_err.ExitCode)
 	}
 	filename = fmt.Sprintf("content/%s", filename)
 

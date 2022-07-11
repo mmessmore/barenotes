@@ -23,7 +23,6 @@ package internal
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 )
 
@@ -60,11 +59,11 @@ func InitRepo(path string, url string) {
 	}
 
 	// just be save that we got the bits
-	err = exec.Command("git", "submodule", "update", "--init").Run()
-	if err != nil {
+	run_err := Run("git", "submodule", "update", "--init")
+	if run_err != nil {
 		fmt.Printf("Adding theme git submodule failed in %s\n", path)
-		fmt.Println(err)
-		os.Exit(1)
+		fmt.Println(run_err.Output)
+		os.Exit(run_err.ExitCode)
 	}
 }
 
@@ -78,18 +77,18 @@ func createBaseRepo(path string) error {
 	os.Chdir(path)
 
 	// init git repo
-	err = exec.Command("git", "init").Run()
-	if err != nil {
+	run_err := Run("git", "init")
+	if run_err != nil {
 		fmt.Printf("'git init' failed in %s\n", path)
-		fmt.Println(err)
-		os.Exit(1)
+		fmt.Println(run_err.Output)
+		os.Exit(run_err.ExitCode)
 	}
 	return nil
 }
 
-func addSubmodule(url string, path string, theme_path string) error {
+func addSubmodule(url string, path string, theme_path string) *RunError {
 	// set up the submodule
-	err := exec.Command("git", "submodule", "add", url, theme_path).Run()
+	err := Run("git", "submodule", "add", url, theme_path)
 	if err != nil {
 		return err
 	}
@@ -97,21 +96,18 @@ func addSubmodule(url string, path string, theme_path string) error {
 }
 
 func UpdateSubmodule() {
-	CD()
-	err := exec.Command("git", "submodule", "update", "--remote", "--merge").Run()
-	if err != nil {
-		fmt.Printf("Failed to update theme")
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	Git("git", "submodule", "update", "--remote", "--merge")
 }
 
 func Git(args ...string) {
 	CD()
-	err := exec.Command("git", args...)
+	realArgs := []string{"git"}
+	realArgs = append(realArgs, args...)
+
+	err := Run(realArgs...)
 	if err != nil {
 		fmt.Printf("Git command failed")
-		fmt.Println(err)
-		os.Exit(1)
+		fmt.Println(err.Output)
+		os.Exit(err.ExitCode)
 	}
 }

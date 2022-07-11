@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"syscall"
 
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -156,4 +157,49 @@ func DisplayYamlConfig() {
 	y, _ := yaml.Marshal(&rc)
 
 	fmt.Print(string(y))
+}
+
+type RunError struct {
+	Output   string
+	ExitCode int
+	Tool     string
+}
+
+func (r *RunError) Error() string {
+	return fmt.Sprintf("%s exited %d:\n%s",
+		r.Tool, r.ExitCode, r.Output,
+	)
+}
+
+func Run(args ...string) *RunError {
+	cmd := args[0]
+	cmdArgs := args[1:]
+	err := exec.Command(cmd, cmdArgs...).Run()
+	if err != nil {
+		real_err := err.(*exec.ExitError)
+		return &RunError{
+			Tool:     args[0],
+			Output:   string(real_err.Stderr),
+			ExitCode: real_err.ExitCode(),
+		}
+	}
+	return nil
+}
+
+func Background(args ...string) (*os.Process, error) {
+	procAttr := os.ProcAttr{}
+	proc, err := os.StartProcess(args[0], args, &procAttr)
+	if err != nil {
+		return nil, err
+	}
+	return proc, nil
+}
+
+func Exec(args ...string) error {
+	env := os.Environ()
+	err := syscall.Exec(args[0], args, env)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -48,10 +48,7 @@ func Start() {
 		os.Exit(1)
 	}
 
-	procAttr := os.ProcAttr{}
-
-	args := []string{hugo, "serve", "--logFile", "/dev/null"}
-	proc, err := os.StartProcess("hugo", args, &procAttr)
+	proc, err := Background(hugo, "serve", "--logFile", "/dev/null")
 	if err != nil {
 		fmt.Println("ERROR: could not start hugo server")
 		// this is an os.PathError aka io.fs.PathError
