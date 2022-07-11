@@ -47,7 +47,7 @@ func InitRepo(path string, url string) {
 
 	// derive the theme name and path from the URL
 	pieces := strings.Split(url, "/")
-	theme_name := pieces[len(pieces) - 1]
+	theme_name := pieces[len(pieces)-1]
 	theme_name = strings.TrimSuffix(theme_name, ".git")
 	theme_name = strings.TrimPrefix(theme_name, "hugo-")
 	theme_path := fmt.Sprintf("./themes/%s", theme_name)

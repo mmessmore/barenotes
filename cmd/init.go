@@ -24,6 +24,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/mmessmore/barenotes/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +38,11 @@ This creates the directory, sets up a git repo using the exampleSite and
 adds the theme repository as a submodule.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("init called")
+		repo_path, _ := cmd.Flags().GetString("directory")
+		url, _ := cmd.Flags().GetString("url")
+		internal.InitRepo(repo_path, url)
+
+		fmt.Printf("Repo successfully created in %s!\n", repo_path)
 	},
 }
 
