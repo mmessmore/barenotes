@@ -91,6 +91,14 @@ func GetHugo() (string, error) {
 	return hugo, nil
 }
 
+func GetGit() (string, error) {
+	git, err := exec.LookPath(viper.GetString("git"))
+	if err != nil {
+		return "", errors.New("Could not find git executable")
+	}
+	return git, nil
+}
+
 func DisplayHumanConfig() {
 	fmt.Println("Paths:")
 	fmt.Printf("\tHugo root: %s\n\n", viper.GetString("root"))

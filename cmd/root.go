@@ -62,9 +62,10 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default $HOME/.barenotes.yaml)")
 	rootCmd.PersistentFlags().StringP("root", "r", ".", "Root of hugo repository")
-	rootCmd.PersistentFlags().StringP("editor", "e", "", "Text editor to use")
-	rootCmd.PersistentFlags().StringP("browser", "b", "", "Web browser to use")
+	rootCmd.PersistentFlags().StringP("editor", "e", "", "Text editor binary")
+	rootCmd.PersistentFlags().StringP("browser", "b", "", "Web browser binary/launcher")
 	rootCmd.PersistentFlags().StringP("hugo", "H", "hugo", "Hugo binary")
+	rootCmd.PersistentFlags().StringP("git", "g", "git", "Git binary")
 	viper.BindPFlags(rootCmd.PersistentFlags())
 }
 
