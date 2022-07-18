@@ -199,6 +199,7 @@ func Prompt(prompt string) bool {
 		fmt.Printf("Error reading from prompt: %v\n", err)
 		os.Exit(1)
 	}
+	fmt.Printf("\n")
 
 	return strings.ToLower(strings.TrimSpace(resp))[0] == 'y'
 }

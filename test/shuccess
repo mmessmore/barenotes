@@ -10,7 +10,7 @@ export VERBOSE=0
 CSV_FILE=""
 JUNIT_FILE=""
 TESTSUITE="messynotes"
-export UNCLEAN=false
+export CLEAN=true
 
 # Vars for tests
 MESSY_CONFIG="./messynotes.yaml"
@@ -31,16 +31,19 @@ REPO_DIR="./notes"
 
 if ! [ -x cleanup ]; then
 	cleanup() {
-		if ! "$UNCLEAN"; then
+		if ! "$CLEAN"; then
 			echo "skipping cleaning temp data"
 			echo "Temp directory: ${TDIR}"
 			return 0
 		fi
-			echo "cleaning temp files"
-			rm -fr "$TDIR" >/dev/null 2>&1
+		echo "cleaning temp directory: ${TDIR}"
+		rm -fr "$TDIR"
 
-			[ -d "$TDIR" ] && sleep 5
+		if [ -d "$TDIR" ]; then
+			echo "Temp dir still there... trying again"
+			sleep 5
 			rm -fr "$TDIR"
+		fi
 	}
 fi
 
@@ -53,12 +56,11 @@ if ! [ -x pre_run ]; then
 
 		verbose 1 "Getting current binary"
 		(
-
 			cd ../
-			make clean
 			make
 		)
-		export TDIR=$(mktemp -d /tmp/messynotes_test.XXXXXX)
+		TDIR=$(mktemp -d /tmp/messynotes_test.XXXXXX)
+		export TDIR
 		cp ../messynotes ./shuccess "$TDIR"/
 		if ! cd "$TDIR"; then
 			echo Temp directory failed tragically
@@ -113,7 +115,7 @@ test_submodule() {
 	)
 }
 
-# test 3 Check submodule cloned
+# test 3 Check that the submodule is cloned
 test_submodule_cloned() {
 	[ -f "${REPO_DIR}/themes/messynotes/theme.toml" ]
 }
@@ -136,8 +138,11 @@ test_config() {
 
 # test 5 make sure hugo starts
 test_start() {
-	./messynotes --config "$MESSY_CONFIG" start
-	curl http://localhost:1313 >/dev/null 2>&1
+	./messynotes --config "$MESSY_CONFIG" start -n
+	sleep 1
+	curl http://localhost:1313 >/dev/null 2>&1 || return 1
+
+	./messynotes --config "$MESSY_CONFIG" stop
 }
 
 ################################################################################
@@ -300,7 +305,10 @@ report_screen() {
 		else
 			echo "${name} ${RED}FAILED${RESET} in ${time}s"
 		fi
-		echo "    ${TEST_MESSAGE[i]}"
+
+		# we have to sed here
+		# shellcheck disable=SC2001
+		echo "${TEST_MESSAGE[i]}" | sed 's/^/\t/'
 		i=$((i+1))
 	done
 	echo
@@ -453,11 +461,12 @@ fail() {
 
 get_desc() {
 	local func="$1"
+	# if it's a file based test use that
 	if [ -x "$func" ]; then
 		awk 'NR == 2{for (i=4; i<=NF; i++) printf $i" ";print ""}' "$func"
-
+	# otherwise look for the function
 	else
-		awk '$1 ~ /^'"$func"'/{print f} {f=""; for (i=4; i<=NF; i++) f=f" "$i}' "$full_prog_path"
+		awk '$1 ~ /^'"$func"'\(/{print f} {f=""; for (i=4; i<=NF; i++) f=f" "$i}' "$full_prog_path"
 	fi
 }
 
@@ -484,7 +493,7 @@ while getopts hc:j:Pt:uv OPT; do
 			TESTSUITE="$OPTARG"
 			;;
 		u)
-			export UNCLEAN=true
+			export CLEAN=false
 			;;
 		v)
 			export VERBOSE=$((VERBOSE + 1))
@@ -505,6 +514,7 @@ for test in $(get_tests "$TEST_NUM"); do
 	run_test "$test"
 done
 post_run
+cleanup
 TOTAL_END="$(date +%s)"
 TOTAL_TIME=$((TOTAL_END - TOTAL_START))
 

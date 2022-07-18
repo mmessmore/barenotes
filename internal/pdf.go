@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-
-	"github.com/wangii/emoji"
 )
 
 /*
@@ -28,8 +26,7 @@ func ConvertToPDF(inPath string, outPath string) {
 	}
 	defer os.Remove(tFile.Name())
 
-	outText := emoji.UnicodeToTwemoji(inText, 12, false)
-	outText = emoji.EmojiTagToTwemoji(outText, 12, false)
+	outText := Emojify(inText)
 
 	outFile, err := os.Create(outPath)
 	defer outFile.Close()

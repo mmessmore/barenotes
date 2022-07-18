@@ -44,7 +44,6 @@ adds the theme repository as a submodule.
 		repoPath, _ = filepath.Abs(repoPath)
 		themeUrl, _ := cmd.Flags().GetString("themeUrl")
 
-		fmt.Printf("InitRepo(%s, %s)\n", repoPath, themeUrl)
 		internal.InitRepo(repoPath, themeUrl)
 
 		fmt.Printf("Repo successfully created in %s!\n", repoPath)

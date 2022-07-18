@@ -38,11 +38,16 @@ var startCmd = &cobra.Command{
 		fmt.Println("Starting hugo server")
 		internal.CD()
 		internal.Start()
-		fmt.Println("Launching Browser")
-		internal.Open()
+
+		noOpen, _ := cmd.Flags().GetBool("noOpen")
+		if !noOpen {
+			fmt.Println("Launching Browser")
+			internal.Open()
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(startCmd)
+	startCmd.Flags().BoolP("noOpen", "n", false, "Do not open a web browser")
 }

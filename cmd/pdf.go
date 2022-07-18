@@ -40,7 +40,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("pdf called")
-		internal.ConvertToPDF("/home/mike/src/notes/content/notes/associate-07-2022.md", "/home/mike/test.md")
+		internal.ConvertToPDF("/Users/mike/src/notes/content/notes/associate-07-2022.md", "/Users/mike/test.md")
 	},
 }
 

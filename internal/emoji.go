@@ -1,6 +1,9 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 var emojiCodes = map[string]string{
 	"+1":                              "1f44d",
@@ -877,19 +880,27 @@ var emojiCodes = map[string]string{
 	"zzz":                             "1f4a4",
 }
 
-func twemojiLink(name string, width int) string {
+func twemojiLink(name string) string {
 	return fmt.Sprintf(
-		"![%s](https://twemoji.maxcdn.com/v/latest/svg/%s.svg){width=%d}",
+		"![%s](https://twemoji.maxcdn.com/v/latest/svg/%s.svg){width=1em}",
 		name,
 		emojiCodes[name],
-		width,
 	)
 }
 
-func EmojiFy(text string) string {
+func Emojify(text string) string {
+	return emojifyByCode(text)
+}
 
-	// TODO: substitute :name: with twemoji link strings
-	outText := text
-
-	return outText
+func emojifyByCode(text string) string {
+	out := text
+	for code := range emojiCodes {
+		fmt.Printf("replacing %s\n", code)
+		out = strings.ReplaceAll(
+			out,
+			fmt.Sprintf(":%s:", code),
+			twemojiLink(code),
+		)
+	}
+	return string(out)
 }

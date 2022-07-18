@@ -6,7 +6,6 @@ require (
 	github.com/otiai10/copy v1.7.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.12.0
-	github.com/wangii/emoji v0.0.0-20150519084846-d15b69a4831e
 	gopkg.in/yaml.v3 v3.0.1
 )
 
