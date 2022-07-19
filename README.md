@@ -3,15 +3,32 @@
 This is a CLI to facilitate using Hugo as a personal notes/TODO system via the
 [messynotes hugo theme](../).
 
-## Name
+## Features
 
-I originally called this "barenotes", but then realized that totally collides
-with the Bear Notes app.  Almost all synonyms for "simple" were taken, so I
-went with "messy" because Messmore and whatever.
+This CLI wraps hugo + the theme for easy notes a TODO management.  It does
+things such as:
 
-I'm mid-name change, so haven't adjusted everything.  So please bear with me.
-(pun not intended, but enjoyed after typing)
+- Revision control your markdown-based notes with `git`.
+- Use your editor of choice vs an incomplete baked-in editor.
+- Use Hugo to render-on-save.
+- Initialize a new repository with the theme and a skeleton layout
+- Create and edit notes easily without having to `cd` to your repo
+- Proxy use of `git` inspired by [chezmoi](https://www.chezmoi.io/), which I
+  use and love.
+- Run the Hugo server in the background
+- Pull up said hugo server in your browser.
+- Generate PDF files of a given note via headless chrome to preserve all the
+  Hugo formatting.  Works with the theme to make docs not include navigation,
+  etc.
 
+Theme features:
+
+- Have "private" notes and categories not displayed in the index unless you hit
+  the toggle at the bottom or press "P".
+- Keeps the TODO note at the top.
+- Keeps track of "categories" as threads as well as "tags" as a way to
+  associate disparate notes.
+- Supports light mode, dark mode, print view via CSS media queries.
 
 ## Installing/Building
 
@@ -30,6 +47,9 @@ I didn't want to actually name the binary that because there are likely 100
 `notes` commands out there.
 
 ## Usage
+
+If you run `messynotes init`, it will create the scaffolding for a project and
+prompt you to save the configuration for it.
 
 You probably want to have at least a `~/.messynotes.yaml` config file setting
 the root directory of your hugo repo.  That makes it so you don't have to `cd`
@@ -71,11 +91,13 @@ Usage:
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
   edit        Edit an existing note
+  editConfig  Edit configuration file
   git         Run git commands within the repo
   help        Help about any command
   init        Initialize new site/repository
   new         Create a new note
   open        Open a web browser to the hugo url (http://localhost:1313)
+  pdf         Create a PDF from an existing note
   restart     Restart hugo server
   showConfig  display configuration specified or implied
   start       Run the hugo server and open the browser to it.
