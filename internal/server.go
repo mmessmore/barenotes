@@ -24,8 +24,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 // Linux has up to 32768
@@ -33,7 +36,8 @@ import (
 // FreeBSD up to 99999
 // So 5 bytes
 const MAX_PID_SIZE int = 5
-const PID_FILE string = ".hugo.pid"
+
+var PID_FILE = ".hugo.pid"
 
 /*
 These functions all assume that the current working directory is the hugo
@@ -83,7 +87,12 @@ func Stop() {
 }
 
 func SetPid(pid int) error {
-	pidFile, err := os.Create(PID_FILE)
+	pidPath := filepath.Join(
+		viper.GetString("root"),
+		PID_FILE,
+	)
+
+	pidFile, err := os.Create(pidPath)
 	if err != nil {
 		return err
 	}
@@ -97,9 +106,14 @@ func SetPid(pid int) error {
 
 func GetPid() (int, error) {
 	var pid int
+	pidPath := filepath.Join(
+		viper.GetString("root"),
+		PID_FILE,
+	)
 	pidBytes := make([]byte, MAX_PID_SIZE)
 
-	pidFile, err := os.Open(PID_FILE)
+	fmt.Printf("Checking %s\n", pidPath)
+	pidFile, err := os.Open(pidPath)
 	if err != nil {
 		return 0, err
 	}
@@ -117,4 +131,17 @@ func GetPid() (int, error) {
 	}
 
 	return pid, nil
+}
+
+func IsRunning() bool {
+	pid, err := GetPid()
+	if err != nil {
+		return false
+	}
+	_, err = os.FindProcess(pid)
+	if err != nil {
+		fmt.Printf("WARNING: %d is not running.  Maybe hugo died?\n", pid)
+		return false
+	}
+	return true
 }

@@ -1,35 +1,51 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/chromedp/cdproto/emulation"
+	"github.com/chromedp/cdproto/page"
+	"github.com/chromedp/chromedp"
 )
 
 /*
-	Converts Hugo markdown to PDF via Pandoc
-	This handles converting emoji characters or "tags" to image links
-	so pdflatex doesn't lose its mind and we don't have to do crazy hacks.
+Trying headless chrome
 */
-func ConvertToPDF(inPath string, outPath string) {
-	input, err := ioutil.ReadFile(inPath)
+func ConvertToPDF(inArticle string, outPath string) {
+	url := fmt.Sprintf("http://localhost:1313/notes/%s/", inArticle)
+	var pdfBuffer []byte
+
+	taskCtx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
+	err := chromedp.Run(taskCtx, chromePDF(url, &pdfBuffer))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	inText := string(input)
 
-	tFile, err := ioutil.TempFile("/tmp", "messynotes")
+	err = ioutil.WriteFile(outPath, pdfBuffer, 0644)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer os.Remove(tFile.Name())
+}
 
-	outText := Emojify(inText)
-
-	outFile, err := os.Create(outPath)
-	defer outFile.Close()
-
-	outFile.WriteString(outText)
+func chromePDF(url string, res *[]byte) chromedp.Tasks {
+	return chromedp.Tasks{
+		emulation.SetUserAgentOverride("Messynotes 1.0"),
+		chromedp.Navigate(url),
+		chromedp.WaitVisible("body", chromedp.ByQuery),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			buf, _, err := page.PrintToPDF().WithPrintBackground(true).Do(ctx)
+			if err != nil {
+				return err
+			}
+			*res = buf
+			return nil
+		}),
+	}
 }

@@ -19,6 +19,10 @@ install: messynotes
 test:
 	make -C test
 
+.PHONY: update
+update:
+	go get -u
+
 .PHONY: clean
 clean:
 	rm -f messynotes .pretty

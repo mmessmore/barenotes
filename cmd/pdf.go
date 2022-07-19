@@ -23,6 +23,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/mmessmore/messynotes/internal"
 	"github.com/spf13/cobra"
@@ -30,30 +31,47 @@ import (
 
 // pdfCmd represents the pdf command
 var pdfCmd = &cobra.Command{
-	Use:   "pdf",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Args:  cobra.MinimumNArgs(1),
+	Use:   "pdf [TITLE]",
+	Short: "Create a PDF from an existing note",
+	Long: `Create a pdf of an existing note by title.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Titles must be the lowercased filename without the extension as it is in the
+URL when running hugo.
+
+Shell completion provides the title in the correct format.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("pdf called")
-		internal.ConvertToPDF("/Users/mike/src/notes/content/notes/associate-07-2022.md", "/Users/mike/test.md")
+		outPath, _ := cmd.Flags().GetString("output")
+		if outPath == "" {
+			outPath = fmt.Sprintf("./%s.pdf", args[0])
+		}
+
+		if !internal.IsRunning() {
+			fmt.Println("Hugo server does not appear to be running.")
+			fmt.Println("Exiting")
+			os.Exit(1)
+		}
+
+		internal.ConvertToPDF(args[0], outPath)
+		fmt.Printf("PDF written to %s\n", outPath)
+	},
+	ValidArgsFunction: func(
+		cmd *cobra.Command,
+		args []string,
+		toComplete string,
+	) ([]string, cobra.ShellCompDirective) {
+		return internal.GetTitles(toComplete),
+			cobra.ShellCompDirectiveNoFileComp
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(pdfCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// pdfCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// pdfCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	pdfCmd.Flags().StringP(
+		"output",
+		"o",
+		"",
+		"Output file, ./[title].pdf if unspecified",
+	)
 }
