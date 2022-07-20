@@ -22,22 +22,30 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"github.com/mmessmore/messynotes/internal"
+	"fmt"
+
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-// updateCmd represents the update command
-var updateCmd = &cobra.Command{
-	Use:   "update",
-	Short: "Update theme",
-	Long: `This command will update the theme submodule to the current upstream
-version.`,
+// contentDirCmd represents the contentDir command
+var contentDirCmd = &cobra.Command{
+	Use:   "contentDir",
+	Short: "Prints the directory with markdown notes to stdout",
+	Long: `Prints the directory with with markdown note files to stdout
+
+This can be used for things like:
+  cd $(messynotes contentDir)
+  sed -i 's/- oldcategory/- newcategory/' $(messynotes contentDir)/*
+
+It's just shorthand for ROOT/content/notes, where ROOT is the configured root
+directory of the messynotes repo.
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.CD()
-		internal.UpdateSubmodule()
+		fmt.Printf("%s/content/notes\n", viper.GetString("root"))
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(updateCmd)
+	rootCmd.AddCommand(contentDirCmd)
 }

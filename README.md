@@ -90,6 +90,7 @@ Usage:
 
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
+  contentDir  Prints the directory with markdown notes to stdout
   edit        Edit an existing note
   editConfig  Edit configuration file
   git         Run git commands within the repo
