@@ -111,8 +111,6 @@ func GetPid() (int, error) {
 		PID_FILE,
 	)
 	pidBytes := make([]byte, MAX_PID_SIZE)
-
-	fmt.Printf("Checking %s\n", pidPath)
 	pidFile, err := os.Open(pidPath)
 	if err != nil {
 		return 0, err
