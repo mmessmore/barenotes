@@ -48,7 +48,13 @@ func EditByTitle(title string) {
 	filename := fmt.Sprintf("%s/content/notes/%s.md",
 		viper.GetString("root"),
 		strings.ReplaceAll(strings.ToLower(title), " ", "-"))
+
+	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
+		fmt.Printf("Note does not exist: '%s'\n", title)
+		return
+	}
 	Edit(filename)
+
 }
 
 func GetTitles(toComplete string) []string {
