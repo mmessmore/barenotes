@@ -145,6 +145,26 @@ test_start() {
 	./messynotes --config "$MESSY_CONFIG" stop
 }
 
+# test 6 make sure it doesn't edit a non-existant note
+test_negative_edit() {
+	./messynotes --config "$MESSY_CONFIG" edit this-doesnt-exist
+	ret=$?
+	case "$ret" in
+		2)
+			# 2 = ENOENT, this is right
+			return 0
+			;;
+		0)
+			echo "Returned success when it should have failed"
+			return 1
+			;;
+		*)
+			echo "Returned $ret, should have been 2/ENOENT"
+			return "$ret"
+			;;
+	esac
+}
+
 ################################################################################
 # STOP ADDING TESTS
 ################################################################################

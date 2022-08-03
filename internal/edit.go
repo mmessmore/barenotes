@@ -51,10 +51,13 @@ func EditByTitle(title string) {
 
 	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
 		fmt.Printf("Note does not exist: '%s'\n", title)
-		return
+		/*
+			I can't find a way to use fs.ErrNotExist or syscall.ENOENT
+			to get back to an integer, so this is hardcoded.
+		*/
+		os.Exit(2)
 	}
 	Edit(filename)
-
 }
 
 func GetTitles(toComplete string) []string {
