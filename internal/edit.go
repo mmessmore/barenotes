@@ -21,9 +21,9 @@ THE SOFTWARE.
 package internal
 
 import (
-	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -45,11 +45,8 @@ func Edit(path string) {
 }
 
 func EditByTitle(title string) {
-	filename := fmt.Sprintf("%s/content/notes/%s.md",
-		viper.GetString("root"),
-		strings.ReplaceAll(strings.ToLower(title), " ", "-"))
-
-	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
+	_, filename, exists := NotePathsByTitle(title)
+	if !exists {
 		fmt.Printf("Note does not exist: '%s'\n", title)
 		/*
 			I can't find a way to use fs.ErrNotExist or syscall.ENOENT
@@ -62,7 +59,11 @@ func EditByTitle(title string) {
 
 func GetTitles(toComplete string) []string {
 	var titles []string
-	f, err := os.Open(viper.GetString("root") + "/content/notes")
+	f, err := os.Open(filepath.Join(
+		viper.GetString("root"),
+		"content",
+		"notes"),
+	)
 	if err != nil {
 		return nil
 	}
@@ -88,14 +89,12 @@ func GetTitles(toComplete string) []string {
 }
 
 func Create(title string) {
-	filename := fmt.Sprintf("notes/%s.md",
-		strings.ReplaceAll(strings.ToLower(title), " ", "-"))
-	fullFilename := "content/" + filename
 
-	if _, err := os.Stat(fullFilename); err == nil {
+	filename, fullFilename, exists := NotePathsByTitle(title)
+	if exists {
 		fmt.Printf("File already exists, editing:\n\t%s\n", fullFilename)
 		Edit(fullFilename)
-	} else if errors.Is(err, os.ErrNotExist) {
+	} else {
 		hugo, err := GetHugo()
 
 		run_err := Run(hugo, "new", filename)
@@ -106,13 +105,37 @@ func Create(title string) {
 		}
 
 		Edit(fullFilename)
-	} else {
-		fmt.Println(err)
-		os.Exit(1)
 	}
 
 }
 
 func Todo() {
-	Edit("content/notes/TODO.md")
+	Edit(filepath.Join(
+		viper.GetString("root"),
+		"content",
+		"notes",
+		"TODO.md"),
+	)
+}
+
+func NotePathsByTitle(title string) (string, string, bool) {
+	filename := filepath.Join(
+		"notes",
+		fmt.Sprintf(
+			"%s.md",
+			strings.ReplaceAll(strings.ToLower(title), " ", "-"),
+		),
+	)
+
+	fullFilename := filepath.Join(
+		viper.GetString("root"),
+		"content",
+		filename,
+	)
+
+	if _, err := os.Stat(fullFilename); err == nil {
+		return filename, fullFilename, true
+	} else {
+		return filename, fullFilename, false
+	}
 }

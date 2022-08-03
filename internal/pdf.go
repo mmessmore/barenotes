@@ -14,8 +14,17 @@ import (
 /*
 Trying headless chrome
 */
-func ConvertToPDF(inArticle string, outPath string) {
-	url := fmt.Sprintf("http://localhost:1313/notes/%s/", inArticle)
+func ConvertToPDF(title string, outPath string) {
+
+	_, _, exists := NotePathsByTitle(title)
+
+	if !exists {
+		fmt.Printf("Note does not exist: %s\n", title)
+		os.Exit(2)
+	}
+
+	url := fmt.Sprintf("http://localhost:1313/notes/%s/", title)
+	fmt.Printf("DEBUG: %s\n", url)
 	var pdfBuffer []byte
 
 	taskCtx, cancel := chromedp.NewContext(context.Background())

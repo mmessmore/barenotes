@@ -140,7 +140,11 @@ test_config() {
 test_start() {
 	./messynotes --config "$MESSY_CONFIG" start -n
 	sleep 1
-	curl http://localhost:1313 >/dev/null 2>&1 || return 1
+	if ! curl http://localhost:1313 >/dev/null 2>&1; then
+		echo "Could not open index"
+		./messynotes --config "$MESSY_CONFIG" stop
+		return 1
+	fi
 
 	./messynotes --config "$MESSY_CONFIG" stop
 }
@@ -160,6 +164,47 @@ test_negative_edit() {
 			;;
 		*)
 			echo "Returned $ret, should have been 2/ENOENT"
+			return "$ret"
+			;;
+	esac
+}
+
+# test 7 check if it makes a pdf
+test_pdf() {
+	# This just makes sure there's a file, not that it looks right
+	./messynotes --config "$MESSY_CONFIG" start -n
+	if ! ./messynotes --config "$MESSY_CONFIG" pdf emojis; then
+		echo "failed running"
+		./messynotes --config "$MESSY_CONFIG" stop
+		return 1
+	fi
+	if ! [ -f emojis.pdf ]; then
+		echo "No PDF generated"
+		./messynotes --config "$MESSY_CONFIG" stop
+		return 1
+	fi
+	./messynotes --config "$MESSY_CONFIG" stop
+}
+
+# test 8 make sure it doesn't try to pdf a non-existant note
+test_negative_pdf() {
+	./messynotes --config "$MESSY_CONFIG" start -n
+	./messynotes --config "$MESSY_CONFIG" pdf this-doesnt-exist
+	ret=$?
+	case "$ret" in
+		2)
+			# 2 = ENOENT, this is right
+			./messynotes --config "$MESSY_CONFIG" stop
+			return 0
+			;;
+		0)
+			echo "Returned success when it should have failed"
+			./messynotes --config "$MESSY_CONFIG" stop
+			return 1
+			;;
+		*)
+			echo "Returned $ret, should have been 2/ENOENT"
+			./messynotes --config "$MESSY_CONFIG" stop
 			return "$ret"
 			;;
 	esac
