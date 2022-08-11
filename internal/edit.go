@@ -29,6 +29,21 @@ import (
 	"github.com/spf13/viper"
 )
 
+func Rm(title string, force bool) {
+	_, filename, exists := NotePathsByTitle(title)
+	if !exists {
+		fmt.Printf("Note does not exist: %s\n", title)
+		os.Exit(2)
+	}
+
+	CD()
+	if force {
+		ExecGit("rm", "-f", filename)
+	} else {
+		ExecGit("rm", filename)
+	}
+}
+
 func Edit(path string) {
 	editor, err := GetEditor()
 	if err != nil {
