@@ -23,6 +23,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/mmessmore/messynotes/internal"
@@ -31,7 +32,8 @@ import (
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
-	Use:   "init",
+	Args:  cobra.MinimumNArgs(1),
+	Use:   "init [new directory]",
 	Short: "Initialize new site/repository",
 	Long: `Bootstrap a new site
 
@@ -39,15 +41,21 @@ This creates the directory, sets up a git repo using the exampleSite and
 adds the theme repository as a submodule.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cfgPath, _ := filepath.Abs(cfgFile)
-		repoPath, _ := cmd.Flags().GetString("directory")
-		repoPath, _ = filepath.Abs(repoPath)
+		// if cfgFile isn't set, fall to default
+		// this feels gross, but Viper supports multiple sources
+		// so I can't get the path from it
+		if cfgFile == "" {
+			home, _ := os.UserHomeDir()
+			cfgFile = filepath.Join(home, ".messynotes.yaml")
+		}
+
+		repoPath, _ := filepath.Abs(args[0])
 		themeUrl, _ := cmd.Flags().GetString("themeUrl")
 
 		internal.InitRepo(repoPath, themeUrl)
 
 		fmt.Printf("Repo successfully created in %s!\n", repoPath)
-		internal.PromptToSaveConfig(repoPath, cfgPath)
+		internal.PromptToSaveConfig(repoPath, cfgFile)
 	},
 }
 
