@@ -24,7 +24,6 @@ func ConvertToPDF(title string, outPath string) {
 	}
 
 	url := fmt.Sprintf("http://localhost:1313/notes/%s/", title)
-	fmt.Printf("DEBUG: %s\n", url)
 	var pdfBuffer []byte
 
 	taskCtx, cancel := chromedp.NewContext(context.Background())
