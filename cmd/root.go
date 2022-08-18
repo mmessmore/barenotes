@@ -88,4 +88,5 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	viper.ReadInConfig()
+
 }
