@@ -37,10 +37,19 @@ func Rm(title string, force bool) {
 	}
 
 	CD()
-	if force {
-		ExecGit("rm", "-f", filename)
+	untracked := RunGit("ls-files", "--error-unmatch", filename)
+	if untracked == nil {
+		if force {
+			ExecGit("rm", "-f", filename)
+		} else {
+			ExecGit("rm", filename)
+		}
 	} else {
-		ExecGit("rm", filename)
+		e := os.Remove(filename)
+		if e != nil {
+			fmt.Printf("Could not delete %s\n", filename)
+			fmt.Println(e)
+		}
 	}
 }
 
