@@ -1,7 +1,18 @@
 # Messynotes CLI
 
 This is a CLI to facilitate using Hugo as a personal notes/TODO system via the
-[messynotes hugo theme](../).
+messynotes hugo theme.  The basic idea is to use the hugo server to
+serve the content locally and reload on change as you go.
+
+This is a scratch-an-itch project out of my frustration with other tools.  I
+want:
+
+- markdown
+- my own git repo (no cloud storage)
+- my own text editor
+- one tool/UI to keep up with notes and my TODO list
+- do everything but view from my terminal
+- no electron, or dependency on a particular editor (like VSCode)
 
 ## Features
 
@@ -11,7 +22,7 @@ things such as:
 - Revision control your markdown-based notes with `git`.
 - Use your editor of choice vs an incomplete baked-in editor.
 - Use Hugo to render-on-save.
-- Initialize a new repository with the theme and a skeleton layout
+- Let you initialize a new repository with the theme and a skeleton layout
 - Create and edit notes easily without having to `cd` to your repo
 - Proxy use of `git` inspired by [chezmoi](https://www.chezmoi.io/), which I
   use and love.
@@ -21,14 +32,15 @@ things such as:
   Hugo formatting.  Works with the theme to make docs not include navigation,
   etc.
 
-Theme features:
+### Planned
 
-- Have "private" notes and categories not displayed in the index unless you hit
-  the toggle at the bottom or press "P".
-- Keeps the TODO note at the top.
-- Keeps track of "categories" as threads as well as "tags" as a way to
-  associate disparate notes.
-- Supports light mode, dark mode, print view via CSS media queries.
+- super basic bookmark management support using Hugo "data"
+
+### Theme
+
+You can see [the example theme](https://mmessmore.github.io/hugo-messynotes)
+and the [README for it](https://github.com/mmessmore/hugo-messynotes) for
+details.
 
 ## Installing/Building
 
