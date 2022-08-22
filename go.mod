@@ -3,7 +3,7 @@ module github.com/mmessmore/messynotes
 go 1.18
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20220816211547-b8b15824df23
+	github.com/chromedp/cdproto v0.0.0-20220822010834-25fb11339333
 	github.com/chromedp/chromedp v0.8.4
 	github.com/otiai10/copy v1.7.0
 	github.com/spf13/cobra v1.5.0

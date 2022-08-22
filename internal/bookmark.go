@@ -26,68 +26,153 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/yaml.v3"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 type BookmarkCategory struct {
-	Name string `yaml:"Name"`
+	Name  string     `yaml:"Name"`
 	Items []Bookmark `yaml:"Items"`
 }
 
 type Bookmark struct {
 	Name string `yaml:"Name"`
-	Url string `yaml:"URL"`
+	Url  string `yaml:"URL"`
 }
 
 func GetBookmarks() []BookmarkCategory {
 	var categories []BookmarkCategory
 
-	// TODO
-	bookmarkPath := ""
+	d, err := os.ReadFile(filepath.Join(
+		viper.GetString("root"),
+		"data",
+		"bookmarks.yaml",
+	))
+	if err != nil {
+		return categories
+	}
 
-	f, err := os.ReadFile(bookmarkPath)
+	yerr := yaml.Unmarshal(d, &categories)
+	if yerr != nil {
+		fmt.Println("ERROR: Could not parse bookmarks")
+		fmt.Println(yerr)
+	}
 
 	return categories
 }
 
-func SetBookmakrs(categories []BookmarkCategory) {
+func SetBookmarks(categories []BookmarkCategory) {
+	d, _ := yaml.Marshal(&categories)
+
+	f, err := os.Create(filepath.Join(
+		viper.GetString("root"),
+		"data",
+		"bookmarks.yaml",
+	))
+	defer f.Close()
+
+	if err != nil {
+		fmt.Println("ERROR: Could not save bookmark changes")
+		fmt.Println(err)
+	}
+
+	_, err = f.Write(d)
+	if err != nil {
+		fmt.Println("ERROR: Could not save bookmark changes")
+		fmt.Println(err)
+	}
 }
 
-func RmBookmark(category string, title string) {
+func RmBookmark(category string, title string) bool {
+	bookmarks := GetBookmarks()
+	success := false
+
+outer:
+	for i := range bookmarks {
+		if bookmarks[i].Name == category {
+			for j := range bookmarks[i].Items {
+				if bookmarks[i].Items[j].Name == title {
+					bookmarks[i].Items = append(
+						bookmarks[i].Items[:j],
+						bookmarks[i].Items[j+1:]...,
+					)
+					success = true
+					break outer
+				}
+			}
+		}
+	}
+	if success {
+		SetBookmarks(bookmarks)
+	}
+	return success
 }
 
-func AddBookmark(category string, title, string, url string) {
+func AddBookmark(category string, title string, url string) {
+	bookmarks := GetBookmarks()
+	added := false
+
+outer:
+	for i := range bookmarks {
+		if bookmarks[i].Name == category {
+			for j := range bookmarks[i].Items {
+				// bookmark exists, set the url
+				if bookmarks[i].Items[j].Name == title {
+					bookmarks[i].Items[j].Url = url
+					// our work is done, leave the loop
+					added = true
+					break outer
+				}
+			}
+
+			// We have the category, but no existing bookmark, so append
+			bookmarks[i].Items = append(
+				bookmarks[i].Items,
+				Bookmark{
+					Name: title,
+					Url:  url,
+				},
+			)
+			// our work is done, leave the loop
+			// "outer" is not needed, just being clear
+			added = true
+			break outer
+		}
+
+	}
+
+	// We never found the category, so create a new one with 1 bookmark
+	if !added {
+		bookmarks = append(
+			bookmarks,
+			BookmarkCategory{
+				Name: category,
+				Items: []Bookmark{{
+					Name: title,
+					Url:  url,
+				}},
+			},
+		)
+	}
+
+	SetBookmarks(bookmarks)
 }
 
 func GetBookmarkCategories(toComplete string) []string {
-	var titles []string
-	f, err := os.Open(filepath.Join(
-		viper.GetString("root"),
-		"content",
-		"notes"),
-	)
-	if err != nil {
-		return nil
-	}
-	files, err := f.Readdir(0)
-	if err != nil {
-		return nil
-	}
 
-	for _, file := range files {
+	var categories []string
+	bookmarks := GetBookmarks()
+
+	for _, category := range bookmarks {
 		if strings.Contains(
-			strings.ToLower(file.Name()),
+			strings.ToLower(category.Name),
 			strings.ToLower(toComplete),
 		) {
-			titles = append(
-				titles,
-				strings.ToLower(
-					strings.TrimSuffix(file.Name(), ".md"),
-				),
+			categories = append(
+				categories,
+				category.Name,
 			)
 		}
 	}
-	return titles
+	return categories
 }
-
