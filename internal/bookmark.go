@@ -41,33 +41,36 @@ type Bookmark struct {
 }
 
 func GetBookmarks() []BookmarkCategory {
-	var categories []BookmarkCategory
+	category := make(map[string][]BookmarkCategory)
 
 	d, err := os.ReadFile(filepath.Join(
 		viper.GetString("root"),
 		"data",
-		"bookmarks.yaml",
+		"bookmarks.yml",
 	))
 	if err != nil {
-		return categories
+		return []BookmarkCategory{}
 	}
 
-	yerr := yaml.Unmarshal(d, &categories)
+	yerr := yaml.Unmarshal(d, &category)
 	if yerr != nil {
 		fmt.Println("ERROR: Could not parse bookmarks")
 		fmt.Println(yerr)
 	}
 
-	return categories
+	return category["Categories"]
 }
 
 func SetBookmarks(categories []BookmarkCategory) {
-	d, _ := yaml.Marshal(&categories)
+
+	category := make(map[string][]BookmarkCategory)
+	category["Categories"] = categories
+	d, _ := yaml.Marshal(&category)
 
 	f, err := os.Create(filepath.Join(
 		viper.GetString("root"),
 		"data",
-		"bookmarks.yaml",
+		"bookmarks.yml",
 	))
 	defer f.Close()
 
@@ -92,10 +95,20 @@ outer:
 		if bookmarks[i].Name == category {
 			for j := range bookmarks[i].Items {
 				if bookmarks[i].Items[j].Name == title {
+
+					// remove the bookmark
 					bookmarks[i].Items = append(
 						bookmarks[i].Items[:j],
 						bookmarks[i].Items[j+1:]...,
 					)
+
+					// if that leaves the category empty, remove that too
+					if len(bookmarks[i].Items) == 0 {
+						bookmarks = append(
+							bookmarks[:i],
+							bookmarks[i+1:]...,
+						)
+					}
 					success = true
 					break outer
 				}
@@ -158,12 +171,11 @@ outer:
 	SetBookmarks(bookmarks)
 }
 
-func GetBookmarkCategories(toComplete string) []string {
+func GetBookmarkCategories(bookmarks []BookmarkCategory, toComplete string) []string {
 
 	var categories []string
-	bookmarks := GetBookmarks()
-
 	for _, category := range bookmarks {
+
 		if strings.Contains(
 			strings.ToLower(category.Name),
 			strings.ToLower(toComplete),
@@ -175,4 +187,36 @@ func GetBookmarkCategories(toComplete string) []string {
 		}
 	}
 	return categories
+}
+
+func GetBookmarkNames(bookmarks []Bookmark, toComplete string) []string {
+
+	var names []string
+	for _, item := range bookmarks {
+		if strings.Contains(
+			strings.ToLower(item.Name),
+			strings.ToLower(toComplete),
+		) {
+			names = append(
+				names,
+				item.Name,
+			)
+		}
+	}
+	return names
+}
+
+func CategoryComplete(toComplete string) []string {
+	bookmarks := GetBookmarks()
+	return GetBookmarkCategories(bookmarks, toComplete)
+}
+
+func BookmarkComplete(category string, toComplete string) []string {
+	bookmarks := GetBookmarks()
+	for i := range bookmarks {
+		if bookmarks[i].Name == category {
+			return GetBookmarkNames(bookmarks[i].Items, toComplete)
+		}
+	}
+	return []string{}
 }
